@@ -2366,10 +2366,12 @@ async def verify_auth_token(request: Request, call_next):
     path = request.url.path
     
     # Bypass auth verification for non-API, public, static, and auth routes
-    if (path.startswith("/api/auth/") or 
+    if (request.method == "OPTIONS" or
+        path.startswith("/api/auth/") or 
         path.startswith("/static/") or 
         path == "/api/config" or 
         path.startswith("/api/debug/") or 
+        path.startswith("/api/session/") or
         path in ("/vyom.html", "/", "/login page background video.mp4", "/VYOM_background.mp4", "/waiting_room.mp4") or
         not path.startswith("/api/")):
         return await call_next(request)

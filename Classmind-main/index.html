@@ -649,27 +649,9 @@ function VyomNotificationsDropdown({ notifList, setNotifList, onClose, onItemCli
 // All API calls use the same origin as the page.
 // FastAPI serves both the frontend (GET /) and all API routes (/api/...).
 // This works on any host:port — localhost:8000, LAN IP, or production.
-const API = (() => {
-  const origin = window.location.origin;
-  if (!origin || origin.startsWith('file://')) {
-    return 'http://localhost:8003';
-  }
-  const port = window.location.port;
-  if (port && port !== '8003' && port !== '8000') {
-    return 'http://localhost:8003';
-  }
-  return origin;
-})();
+const API = 'https://classmind-1-1.onrender.com';
 
-const WS_BASE = (() => {
-  const protocol = window.location.protocol;
-  const host = window.location.host;
-  const port = window.location.port;
-  if (!host || protocol === 'file:' || (port && port !== '8003' && port !== '8000')) {
-    return 'ws://localhost:8003';
-  }
-  return (protocol === "https:" ? "wss://" : "ws://") + host;
-})();
+const WS_BASE = 'wss://classmind-1-1.onrender.com';
 
 // ═══════════════════════════════════════════════════════════════════
 //  GLOBAL SESSION STORE — Singleton. Lives outside React render cycle.

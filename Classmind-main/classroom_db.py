@@ -5,6 +5,7 @@ import logging
 import hashlib
 from typing import Optional, List, Dict
 from pymongo import MongoClient
+import certifi
 
 log = logging.getLogger("vyom.classroom_db")
 
@@ -18,7 +19,7 @@ def get_db():
     global client, db
     if db is None:
         try:
-            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
             db = client[DB_NAME]
             client.server_info()
             log.info("Classroom DB successfully connected to MongoDB")

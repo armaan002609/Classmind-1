@@ -3,6 +3,7 @@ import time
 import logging
 from typing import Optional, Dict
 from pymongo import MongoClient
+import certifi
 
 log = logging.getLogger("vyom.auth_db")
 
@@ -17,7 +18,7 @@ def get_db():
     global client, db
     if db is None:
         try:
-            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+            client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
             db = client[DB_NAME]
             # Verify connection
             client.server_info()
