@@ -2240,7 +2240,11 @@ function LoginModal({defaultRole, onComplete, onClose}) {
           phone: phone.trim() || null
         }
       });
-      add('Verification code sent successfully!', 'success');
+      if (res.demo && res.otp) {
+        add(`Demo Mode: Your OTP is ${res.otp}`, 'success');
+      } else {
+        add('Verification code sent successfully!', 'success');
+      }
       setCooldown(30);
       setView('otp');
     } catch (err) {
@@ -2257,7 +2261,7 @@ function LoginModal({defaultRole, onComplete, onClose}) {
     setBusy(true);
     try {
       add('Resending verification code...', 'info');
-      await apiFetch('/api/auth/send-otp', {
+      const res = await apiFetch('/api/auth/send-otp', {
         method: 'POST',
         body: {
           email: email.trim().toLowerCase(),
@@ -2266,7 +2270,11 @@ function LoginModal({defaultRole, onComplete, onClose}) {
           phone: phone.trim() || null
         }
       });
-      add('Verification code resent successfully!', 'success');
+      if (res.demo && res.otp) {
+        add(`Demo Mode: Your OTP is ${res.otp}`, 'success');
+      } else {
+        add('Verification code resent successfully!', 'success');
+      }
       setCooldown(30);
     } catch (err) {
       add(err.message || 'Failed to resend code', 'error');
