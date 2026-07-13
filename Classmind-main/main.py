@@ -11565,3 +11565,13 @@ async def update_doubt_tags(req: UpdateDoubtTagsReq):
             save_session(req.session_code)
             return d
     raise HTTPException(404, "Doubt not found")
+
+# Enable CORS for the frontend hosted on Hostinger. 
+# MUST be at the bottom so it's the outermost middleware and wraps @app.middleware!
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
