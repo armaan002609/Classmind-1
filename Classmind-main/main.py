@@ -2406,7 +2406,26 @@ async def verify_auth_token(request: Request, call_next):
             if user_info:
                 verified_role = user_info.get("role")
             else:
-                return JSONResponse(status_code=401, content={"error": "Google account not registered. Please sign up first."})
+                # Auto-register Google user if not found in database
+                log.info("[AUTH] Auto-registering new Google user: %s", verified_email)
+                user_id = "u_" + uuid.uuid4().hex[:12]
+                verified_role = "teacher"  # Default role for Google logins
+                pw_hash = hash_password("GoogleAuthRandomPassword!" + uuid.uuid4().hex)
+                
+                auth_db.create_user(
+                    user_id=user_id,
+                    full_name=idinfo.get("name", "Google User"),
+                    email=verified_email,
+                    password_hash=pw_hash,
+                    role=verified_role,
+                    email_verified=True
+                )
+                auth_db.create_teacher_profile(
+                    user_id=user_id,
+                    organization="Google Login User",
+                    designation="Teacher",
+                    department="General"
+                )
         except Exception as e:
             log.error(f"[AUTH] Token verification failed: {e}")
             return JSONResponse(status_code=401, content={"error": f"Invalid or expired authorization token: {str(e)}"})            
