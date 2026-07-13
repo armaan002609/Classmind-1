@@ -2397,7 +2397,9 @@ async def verify_auth_token(request: Request, call_next):
     else:
         # 3. Try verifying as Google ID token
         try:
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), get_google_client_id())
+            cid = get_google_client_id()
+            log.info(f"[AUTH] Verifying Google token with Client ID: {cid}")
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), cid)
             verified_email = idinfo.get("email")
             # Look up email in our database to get their role
             user_info = auth_db.get_user_by_email(verified_email)
@@ -2405,9 +2407,9 @@ async def verify_auth_token(request: Request, call_next):
                 verified_role = user_info.get("role")
             else:
                 return JSONResponse(status_code=401, content={"error": "Google account not registered. Please sign up first."})
-        except Exception:
-            return JSONResponse(status_code=401, content={"error": "Invalid or expired authorization token"})
-            
+        except Exception as e:
+            log.error(f"[AUTH] Token verification failed: {e}")
+            return JSONResponse(status_code=401, content={"error": f"Invalid or expired authorization token: {str(e)}"})            
     if not verified_email or not verified_role:
         return JSONResponse(status_code=401, content={"error": "Invalid token payload"})
         

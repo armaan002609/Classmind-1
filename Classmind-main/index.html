@@ -32,7 +32,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- ✅ No runtime transpiler needed — all JSX pre-compiled to React.createElement -->
+<script>
+  // UPDATE THIS: Set to your exact Render URL (e.g. "https://classmind-backend.onrender.com")
+  // Do NOT include a trailing slash
+  window.BACKEND_URL = "https://classmind-1-1.onrender.com"; 
 
+  const originalFetch = window.fetch;
+  window.fetch = async function() {
+    let [resource, config] = arguments;
+    if (typeof resource === 'string' && resource.startsWith('/api/')) {
+        resource = window.BACKEND_URL + resource;
+    }
+    return originalFetch(resource, config);
+  };
+</script>
 <link rel="stylesheet" href="vyom_style.css">
 </head>
 <body>
@@ -12012,7 +12025,15 @@ function AIQuestionGenerator({
           api_key: apiKey ? apiKey.trim() : null
         })
       });
-      const data = await res.json();
+      let data;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Server returned HTML/non-JSON response (Status: ${res.status}). Server might be down or timed out.`);
+      }
+      
       if (!res.ok) {
         throw new Error(data.error || data.message || 'Generation failed');
       }
@@ -19404,11 +19425,17 @@ function TestModePage({
           api_key: apiKey ? apiKey.trim() : null
         })
       });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || data.message || 'Generation failed');
+      let generatedList;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        generatedList = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error(`Server returned HTML/non-JSON response (Status: ${res.status}). Server might be down or timed out.`);
       }
-      generatedList = await res.json();
+      if (!res.ok) {
+        throw new Error(generatedList.error || generatedList.message || 'Generation failed');
+      }
 
       const savedIds = [];
       for (const q of generatedList) {
